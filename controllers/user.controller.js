@@ -6,14 +6,8 @@ const {secret} = require('../config')
 const validateUser = async (login, mail) => {
     const userCount = await database.query(`SELECT COUNT(user_id) FROM userinfo  WHERE user_login = '${login}' 
         or user_mail = '${mail}'`);
+    console.log(+userCount.rows[0].count)
     return +userCount.rows[0].count > 0
-}
-
-const validatePassword = async (login, userPassword) => {
-    const user = await database.query(`SELECT * FROM userinfo WHERE user_login = '${login}' 
-        or user_mail = '${login}'`).rows[0];
-
-    return bcrypt.compareSync(userPassword, user.user_password);
 }
 
 const addUser = async (mail, password, login) => {
@@ -21,14 +15,21 @@ const addUser = async (mail, password, login) => {
 VALUES ('${mail}', '${password}', '${login}')`)
 }
 
-const getUser = async (login) => {
-    return await database.query(`SELECT * FROM userinfo WHERE user_mail = '${login}' 
-        or user_login = '${login}'`).rows[0];
+const validatePassword = async (login, userPassword) => {
+    const user = await database.query(`SELECT * FROM userinfo WHERE user_login = 'testuser' 
+        or user_mail = 'testuser'`);
+    return bcrypt.compareSync(userPassword, user.rows[0].user_password);
 }
 
-const generateAccessToken = (password, login) => {
+const getUser = async (login) => {
+     const user = await database.query(`SELECT * FROM userinfo WHERE user_mail = '${login}' 
+        or user_login = '${login}'`);
+    return user.rows[0];
+}
+
+const generateAccessToken = (id, login) => {
     const payload = {
-        password,
+        id,
         login
     }
     return jwt.sign(payload, secret, {expiresIn: '24h'})
@@ -60,7 +61,7 @@ class UserController {
                 return res.status(400).json({message: `User with ${login} send not correct password`})
             }
             const user = await getUser(login)
-            const token = generateAccessToken(user.user_password, user.user_login)
+            const token = generateAccessToken(user.user_id, user.user_login)
             return res.json(token)
         } catch (e) {
             console.log(e)
