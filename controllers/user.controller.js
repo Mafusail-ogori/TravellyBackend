@@ -2,6 +2,7 @@ const database = require('../database')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
+const qs = require("qs");
 
 const validateUser = async (login, mail) => {
     const userCount = await database.query(`SELECT COUNT(user_id) FROM userinfo  WHERE user_login = '${login}' 
@@ -10,14 +11,15 @@ const validateUser = async (login, mail) => {
     return +userCount.rows[0].count > 0
 }
 
-const addUser = async (mail, password, login) => {
-    await database.query(`INSERT INTO userinfo (user_mail, user_password, user_login) 
-VALUES ('${mail}', '${password}', '${login}')`)
+const addUser = async (mail, password, login, image) => {
+    await database.query(`INSERT INTO userinfo (user_mail, user_password, user_login, user_image) 
+VALUES ('${mail}', '${password}', '${login}','${image}')`)
 }
 
 const validatePassword = async (login, userPassword) => {
-    const user = await database.query(`SELECT * FROM userinfo WHERE user_login = 'testuser' 
-        or user_mail = 'testuser'`);
+    const user = await database.query(`SELECT * FROM userinfo WHERE user_login = '${login}' 
+        or user_mail = '${login}'`);
+    console.log(bcrypt.compareSync(userPassword, user.rows[0].user_password))
     return bcrypt.compareSync(userPassword, user.rows[0].user_password);
 }
 
@@ -38,13 +40,14 @@ const generateAccessToken = (id, login) => {
 class UserController {
     async registerUser(req, res) {
         try {
-            const {mail, password, login} = req.body
-            if (await validateUser(login, mail)) {
+            const data = req.file.filename
+            console.log(data)
+            const allData = req.body
+            if(await validateUser(allData.login, allData.mail)){
                 return res.status(400).json({message: 'Found same user'})
             }
-            const hashPassword = bcrypt.hashSync(password, 7)
-            await addUser(mail, hashPassword, login)
-            return res.json({message: 'User added successfully'})
+            await addUser(allData.mail, bcrypt.hashSync(allData.password), allData.login, data)
+            return res.status(200).json({message: 'Added successfully'})
         } catch (e) {
             console.log(e);
             res.status(400).json({message: 'Register error'})
@@ -62,7 +65,7 @@ class UserController {
             }
             const user = await getUser(login)
             const token = generateAccessToken(user.user_id, user.user_login)
-            return res.json(token)
+            return res.json({message : token})
         } catch (e) {
             console.log(e)
             res.status(400).json({message: "Login error"})

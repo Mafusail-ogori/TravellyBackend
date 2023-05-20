@@ -3,4 +3,4 @@ const router = new Router()
 const companyController = require('../')
 
 router.post('/create-company')
-router.get('/create-company')
+// router.post('/create-company')
