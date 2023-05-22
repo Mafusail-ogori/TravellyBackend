@@ -10,18 +10,27 @@ company_login = '${login}' or company_mail = '${mail}'`);
     return +companyCount.rows[0].count > 0
 }
 
-// class CompanyController {
-//     async registerCompany(req, res){
-//         try{
-//             const {name, mail, password, amount, date, logo} = req.body
-//             if (await validateCompany(name, mail)){
-//                 return res.status(400).json({message: 'There is company already'})
-//             }
-//             const hashPassword = bcrypt.hashSync(password, 7)
-//             await
-//         } catch (e) {
-//             console.log(e);
-//             res.status(400).json({message: 'Register error'})
-//         }
-//     }
-// }
+const addCompany = async(name, image, date, email, employeeAmount, password) => {
+    await database.query(`INSERT INTO companyinfo (company_name, company_login, creation_date, 
+company_email, employee_amount, company_password) 
+VALUES ('${name}', '${image}', '${date}','${email}','${employeeAmount}','${password}')`)
+}
+
+class CompanyController {
+    async registerCompany(req, res) {
+        try{
+            const data = req.file.filename
+            const allData = req.body
+            console.log(data)
+            if(await validateCompany(allData.login, allData.mail)){
+                return res.status(400).json({message: 'Found same company'})
+            }
+            await addCompany(allData.name, allData.image, allData.date, allData.email,
+                allData.employeeAmount, allData.password)
+            return res.status(200).json({message: 'Company added successfully'})
+        } catch (e){
+            console.log(e);
+            res.status(400).json({message: 'Company register error'})
+        }
+    }
+}

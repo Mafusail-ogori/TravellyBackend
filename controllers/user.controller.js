@@ -41,7 +41,6 @@ class UserController {
     async registerUser(req, res) {
         try {
             const data = req.file.filename
-            console.log(data)
             const allData = req.body
             if(await validateUser(allData.login, allData.mail)){
                 return res.status(400).json({message: 'Found same user'})
