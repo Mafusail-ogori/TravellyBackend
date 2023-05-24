@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
 const qs = require("qs");
+const path = require('path');
+
 
 const validateUser = async (login, mail) => {
     const userCount = await database.query(`SELECT COUNT(user_id) FROM userinfo  WHERE user_login = '${login}' 
@@ -68,6 +70,22 @@ class UserController {
         } catch (e) {
             console.log(e)
             res.status(400).json({message: "Login error"})
+        }
+    }
+
+    async sendUserAvatar(req, res){
+        try{
+
+            jwt.verify(req.headers.authorization, 'PIZZA_PEPPERONI', async (err, decoded) => {
+                if(err){
+                    return res.status(400).json({message: `Incorrect token`})
+                }
+                const userAvatarName = await getUser(decoded.login);
+                res.sendFile(path.join(__dirname, 'storage', userAvatarName.user_image))
+            })
+        } catch (e){
+            console.log(e)
+            res.status(400).json({message: "File sending error"})
         }
     }
 }

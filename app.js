@@ -8,6 +8,7 @@ const multer = require('multer')
 
 const app = express()
 
+app.use(express.static('storage'))
 app.use(cors())
 app.use(bodyParser.json())
 app.use('/', userRouter)
