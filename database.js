@@ -1,11 +1,11 @@
 const Pool = require('pg').Pool
 
 const pool = new Pool({
-    user: "postgres",
-    password: "Hajaomija123",
-    host: "localhost",
+    user: 'postgres',
+    password: 'Hajaomija123' ,
+    host: 'localhost',
     port: 5432,
-    database: "Travelly"
+    database: 'Travelly'
 })
 
 pool.connect((err) => {

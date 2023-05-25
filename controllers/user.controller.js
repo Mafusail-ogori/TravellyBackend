@@ -75,14 +75,18 @@ class UserController {
 
     async sendUserAvatar(req, res){
         try{
+            const userAvatarName = await getUser(req.user.login)
+            return res.status(200).sendFile(path.join(__dirname, '../', 'storage', userAvatarName.user_image))
+        } catch (e){
+            console.log(e)
+            return res.status(400).json({message: "File sending error"})
+        }
+    }
 
-            jwt.verify(req.headers.authorization, 'PIZZA_PEPPERONI', async (err, decoded) => {
-                if(err){
-                    return res.status(400).json({message: `Incorrect token`})
-                }
-                const userAvatarName = await getUser(decoded.login);
-                res.sendFile(path.join(__dirname, 'storage', userAvatarName.user_image))
-            })
+    async sendUseData(req, res){
+        try{
+            const userData = await getUser(req.user.login)
+            return res.status(200).json({login: userData.user_login})
         } catch (e){
             console.log(e)
             res.status(400).json({message: "File sending error"})
