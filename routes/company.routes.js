@@ -1,8 +1,7 @@
 const Router = require('express')
-const router = new Router()
-const companyController = require('../')
+const companyRouter = new Router()
+const companyController = require('../controllers/company.controller')
 const multer = require("multer");
-const userController = require("../controllers/user.controller");
 
 const fileStorageEngine = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -15,4 +14,6 @@ const fileStorageEngine = multer.diskStorage({
 
 const upload = multer({ storage: fileStorageEngine });
 
-router.post('/create-company',upload.single("image"), companyController.registerCompany);
+companyRouter.post('/create-company',upload.single("image"), companyController.registerCompany);
+
+module.exports = companyRouter

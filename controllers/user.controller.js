@@ -2,8 +2,8 @@ const database = require('../database')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
-const qs = require("qs");
 const path = require('path');
+const {readFileSync} = require("fs");
 
 
 const validateUser = async (login, mail) => {
@@ -21,12 +21,11 @@ VALUES ('${mail}', '${password}', '${login}','${image}')`)
 const validatePassword = async (login, userPassword) => {
     const user = await database.query(`SELECT * FROM userinfo WHERE user_login = '${login}' 
         or user_mail = '${login}'`);
-    console.log(bcrypt.compareSync(userPassword, user.rows[0].user_password))
     return bcrypt.compareSync(userPassword, user.rows[0].user_password);
 }
 
 const getUser = async (login) => {
-     const user = await database.query(`SELECT * FROM userinfo WHERE user_mail = '${login}' 
+    const user = await database.query(`SELECT * FROM userinfo WHERE user_mail = '${login}' 
         or user_login = '${login}'`);
     return user.rows[0];
 }
@@ -44,10 +43,10 @@ class UserController {
         try {
             const data = req.file.filename
             const allData = req.body
-            if(await validateUser(allData.login, allData.mail)){
+            if (await validateUser(allData.login, allData.mail)) {
                 return res.status(400).json({message: 'Found same user'})
             }
-            await addUser(allData.mail, bcrypt.hashSync(allData.password), allData.login, data)
+            await addUser(allData.mail, bcrypt.hashSync(allData.password, 7), allData.login, data)
             return res.status(200).json({message: 'Added successfully'})
         } catch (e) {
             console.log(e);
@@ -66,30 +65,27 @@ class UserController {
             }
             const user = await getUser(login)
             const token = generateAccessToken(user.user_id, user.user_login)
-            return res.json({message : token})
+            return res.json({message: token})
         } catch (e) {
             console.log(e)
             res.status(400).json({message: "Login error"})
         }
     }
 
-    async sendUserAvatar(req, res){
-        try{
-            const userAvatarName = await getUser(req.user.login)
-            return res.status(200).sendFile(path.join(__dirname, '../', 'storage', userAvatarName.user_image))
-        } catch (e){
+    async sendUserData(req, res) {
+        try {
+            const userData = await getUser(req.user.login)
+            const jsonData = {
+                login: userData.user_login,
+                email: userData.user_mail
+            }
+            const filepath = path.join(__dirname, '../', 'storage', userData.user_image)
+            res.attachment('file.ext')
+            res.setHeader('Content-Type', 'application/octet-stream')
+            res.send({data: jsonData, file: readFileSync(filepath)})
+        } catch (e) {
             console.log(e)
             return res.status(400).json({message: "File sending error"})
-        }
-    }
-
-    async sendUseData(req, res){
-        try{
-            const userData = await getUser(req.user.login)
-            return res.status(200).json({login: userData.user_login})
-        } catch (e){
-            console.log(e)
-            res.status(400).json({message: "File sending error"})
         }
     }
 }
