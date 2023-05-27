@@ -1,5 +1,5 @@
 const Router = require('express')
-const router = new Router()
+const userRouter = new Router()
 const userController = require('../controllers/user.controller')
 const multer = require('multer')
 const auth = require('../authMiddleWare')
@@ -15,8 +15,8 @@ const fileStorageEngine = multer.diskStorage({
 
 const upload = multer({ storage: fileStorageEngine });
 
-router.post('/sign-up',upload.single("image"), userController.registerUser);
-router.post('/log-in', userController.logInUser);
-router.get('/logged-user-page-avatar', auth, userController.sendUserData)
+userRouter.post('/sign-up',upload.single("image"), userController.registerUser);
+userRouter.post('/log-in', userController.logInUser);
+userRouter.get('/logged-user-page-avatar', auth, userController.sendUserData)
 
-module.exports = router
+module.exports = userRouter

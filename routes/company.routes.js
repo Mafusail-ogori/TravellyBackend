@@ -14,6 +14,7 @@ const fileStorageEngine = multer.diskStorage({
 
 const upload = multer({ storage: fileStorageEngine });
 
-companyRouter.post('/create-company',upload.single("image"), companyController.registerCompany);
+companyRouter.post('/sign-up',upload.single("image"), companyController.registerCompany);
+companyRouter.post('/log-in', companyController.logInCompany)
 
 module.exports = companyRouter
