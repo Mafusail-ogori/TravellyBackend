@@ -75,14 +75,8 @@ class UserController {
     async sendUserData(req, res) {
         try {
             const userData = await getUser(req.user.login)
-            const jsonData = {
-                login: userData.user_login,
-                email: userData.user_mail
-            }
             const filepath = path.join(__dirname, '../', 'storage', userData.user_image)
-            res.attachment('file.ext')
-            res.setHeader('Content-Type', 'application/octet-stream')
-            res.send({data: jsonData, file: readFileSync(filepath)})
+            res.sendFile(filepath)
         } catch (e) {
             console.log(e)
             return res.status(400).json({message: "File sending error"})
