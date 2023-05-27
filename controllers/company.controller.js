@@ -2,6 +2,7 @@ const database = require('../database')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
+const path = require("path");
 
 const validateCompany = async (login, mail) => {
     const companyCount = await database.query(`SELECT COUNT(company_id) FROM companyinfo WHERE
@@ -69,6 +70,18 @@ class CompanyController {
         } catch (e) {
             console.log(e)
             res.status(400).json({message: 'Login error'})
+        }
+    }
+
+    async sendCompanyImage(req, res){
+        try{
+            console.log(req.user.login)
+            const companyData = await getCompany(req.user.login)
+            const filepath = path.join(__dirname, '../', 'company_logo_storage', companyData.company_logo)
+            res.sendFile(filepath)
+        } catch (e) {
+            console.log(e)
+            return res.status(400).json({message: "File sending error"})
         }
     }
 }

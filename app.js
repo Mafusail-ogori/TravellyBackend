@@ -4,9 +4,7 @@ const userRouter = require('./routes/user.routes')
 const companyRouter = require('./routes/company.routes')
 const port = process.env.port || 8080
 const cors = require('cors')
-const {urlencoded} = require("body-parser");
 const bodyParser = require("body-parser");
-const multer = require('multer')
 
 env.config()
 

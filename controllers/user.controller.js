@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
 const path = require('path');
-const {readFileSync} = require("fs");
 
 
 const validateUser = async (login, mail) => {
@@ -72,7 +71,7 @@ class UserController {
         }
     }
 
-    async sendUserData(req, res) {
+    async sendUserImage(req, res) {
         try {
             const userData = await getUser(req.user.login)
             const filepath = path.join(__dirname, '../', 'storage', userData.user_image)
