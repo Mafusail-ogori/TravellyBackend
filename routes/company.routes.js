@@ -30,5 +30,6 @@ companyRouter.post('/sign-up',upload.single("image"), companyController.register
 companyRouter.post('/log-in', companyController.logInCompany)
 companyRouter.post('/add-trip', uploadPhoto.single("image"), companyController.addTrip)
 companyRouter.get('/logged-company-page-avatar', auth, companyController.sendCompanyImage)
+companyRouter.get('/review-trip', auth, companyController.getAllCompanyTrips)
 
 module.exports = companyRouter

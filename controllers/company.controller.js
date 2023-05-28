@@ -55,11 +55,14 @@ trip_name = '${name}'`)
 
 const checkForDate = async (name, startDate, endDate) => {
     const trip = await database.query(`SELECT * FROM trip WHERE trip_name = '${name}'`)
-    console.log(startDate, endDate, trip.rows[0].trip_start_date,  trip.rows[0].trip_end_date)
+    console.log(startDate, endDate, trip.rows[0].trip_start_date, trip.rows[0].trip_end_date)
     return (trip.rows[0].trip_start_date >= startDate && trip.rows[0].trip_start_date <= endDate) ||
         (trip.rows[0].trip_end_date >= startDate && trip.rows[0].trip_end_date <= endDate) ||
         (trip.rows[0].trip_start_date <= startDate && trip.rows[0].trip_end_date >= endDate);
+}
 
+const getAllTrips = async (companyId) => {
+    return await database.query(`SELECT * FROM trip WHERE company_id = ${companyId}`).rows
 }
 
 class CompanyController {
@@ -116,15 +119,14 @@ class CompanyController {
             jwt.verify(allData.token, 'PIZZA_PEPPERONI', async (err, decoded) => {
                 if (err) {
                     console.log(err)
-                }
-                else{
+                } else {
                     console.log(decoded)
-                    if (await checkTrip(allData.name) && await checkForDate(allData.name, allData.startDate.slice(0,10), allData.endDate.slice(0,10))) {
+                    if (await checkTrip(allData.name) && await checkForDate(allData.name, allData.startDate.slice(0, 10), allData.endDate.slice(0, 10))) {
                         return res.status(400).json({message: "There is such an trip for this dates"})
                     }
                     await addTrip(allData.name, allData.amount, allData.animal,
                         allData.transfer, allData.food, allData.hotel,
-                        allData.startCountry, allData.endCountry, allData.startDate.slice(0,10), allData.endDate.slice(0,10), data, allData.price, decoded.id, allData.description)
+                        allData.startCountry, allData.endCountry, allData.startDate.slice(0, 10), allData.endDate.slice(0, 10), data, allData.price, decoded.id, allData.description)
                 }
             })
 
@@ -132,6 +134,15 @@ class CompanyController {
         } catch (e) {
             console.log(e)
             return res.status(400).json({message: "Adding trip failure"})
+        }
+    }
+
+    async getAllCompanyTrips(req, res) {
+        try{
+            res.send(await getAllTrips(req.user.id))
+        }catch (e) {
+            console.log(e)
+            res.status(400).json({message: "Data sending error"})
         }
     }
 }
