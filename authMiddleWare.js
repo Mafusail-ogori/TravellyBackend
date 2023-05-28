@@ -7,7 +7,6 @@ module.exports = (req, res, next) => {
             return res.status(400).json({message: "Token not valid"})
         }
         const userData = jwt.verify(token, 'PIZZA_PEPPERONI')
-        console.log(userData)
         req.user = userData
         next()
     } catch (e) {

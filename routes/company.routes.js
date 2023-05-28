@@ -13,10 +13,22 @@ const fileStorageEngine = multer.diskStorage({
     },
 });
 
+const tripPhotoStorageEngine = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./trip_photo_storage");
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "--" + file.originalname);
+    },
+});
+
+
 const upload = multer({ storage: fileStorageEngine });
+const uploadPhoto = multer({storage: tripPhotoStorageEngine})
 
 companyRouter.post('/sign-up',upload.single("image"), companyController.registerCompany);
 companyRouter.post('/log-in', companyController.logInCompany)
+companyRouter.post('/add-trip', uploadPhoto.single("image"), companyController.addTrip)
 companyRouter.get('/logged-company-page-avatar', auth, companyController.sendCompanyImage)
 
 module.exports = companyRouter
