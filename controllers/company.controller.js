@@ -31,11 +31,12 @@ or company_mail = '${login}'`)
     return company.rows[0];
 }
 
-const addTrip = async (name, amount, animal, transfer, food, hotel, startCountry, endCountry, startDate, endDate, image, price, companyId) => {
+const addTrip = async (name, amount, animal, transfer, food, hotel, startCountry, endCountry, startDate, endDate, image,
+                       price, companyId, description) => {
     await database.query(`INSERT INTO trip (trip_name, trip_people_amount, trip_pets, trip_transfer, trip_food, trip_hotel, trip_start_country, 
-trip_destination_country, trip_start_date, trip_end_date, trip_image, trip_price, company_id)
+trip_destination_country, trip_start_date, trip_end_date, trip_image, trip_price, company_id, trip_description)
 VALUES ('${name}', '${amount}', '${animal}', '${transfer}', '${food}', '${hotel}','${startCountry}', 
-'${endCountry}', '${startDate}','${endDate}','${image}','${price}', '${companyId}')`)
+'${endCountry}', '${startDate}','${endDate}','${image}','${price}', '${companyId}', '${description}')`)
 }
 
 const generateAccessToken = async (id, login) => {
@@ -123,7 +124,7 @@ class CompanyController {
                     }
                     await addTrip(allData.name, allData.amount, allData.animal,
                         allData.transfer, allData.food, allData.hotel,
-                        allData.startCountry, allData.endCountry, allData.startDate.slice(0,10), allData.endDate.slice(0,10), data, allData.price, decoded.id)
+                        allData.startCountry, allData.endCountry, allData.startDate.slice(0,10), allData.endDate.slice(0,10), data, allData.price, decoded.id, allData.description)
                 }
             })
 
