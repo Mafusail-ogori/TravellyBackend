@@ -12,7 +12,7 @@ const app = express()
 
 app.use(express.static('storage'))
 app.use(cors())
-app.use(bodyParser.json())
+app.use(express.json())
 app.use('/user', userRouter)
 app.use('/company', companyRouter)
 

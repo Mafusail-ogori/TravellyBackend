@@ -5,6 +5,7 @@ const {secret} = require('../config')
 const path = require("path");
 const {all} = require("express/lib/application");
 const {config} = require("dotenv");
+const fs = require("fs");
 
 const validateCompany = async (login, mail) => {
     const companyCount = await database.query(`SELECT COUNT(company_id) FROM companyinfo WHERE
@@ -62,7 +63,14 @@ const checkForDate = async (name, startDate, endDate) => {
 }
 
 const getAllTrips = async (companyId) => {
-    return await database.query(`SELECT * FROM trip WHERE company_id = ${companyId}`).rows
+   const trips = await database.query(`SELECT * FROM trip WHERE company_id = ${companyId}`)
+    return trips.rows
+}
+
+const getTrip = async (tripId) => {
+    const trip = await database.query(`SELECT * FROM trip WHERE trip_id = ${tripId}`)
+    console.log(trip.rows[0])
+    return trip.rows[0]
 }
 
 class CompanyController {
@@ -143,6 +151,20 @@ class CompanyController {
         }catch (e) {
             console.log(e)
             res.status(400).json({message: "Data sending error"})
+        }
+    }
+
+    async sendTripImage(req, res){
+        try {
+            const {id} =  req.body
+            console.log(req.body)
+            const trip = await getTrip(id)
+            const filepath = path.join(__dirname, '../', 'trip_photo_storage', trip.trip_image)
+            console.log(filepath)
+            res.sendFile(filepath)
+        } catch (e) {
+         console.log(e)
+         return res.status(400).json({message: "Sending image error"})
         }
     }
 }
