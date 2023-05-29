@@ -69,8 +69,12 @@ const getAllTrips = async (companyId) => {
 
 const getTrip = async (tripId) => {
     const trip = await database.query(`SELECT * FROM trip WHERE trip_id = ${tripId}`)
-    console.log(trip.rows[0])
     return trip.rows[0]
+}
+
+const getAllUserTrips = async (country) => {
+    const trips = await database.query(`SELECT * FROM trip WHERE trip_destination_country = '${country}'`)
+    return trips.rows
 }
 
 class CompanyController {
@@ -161,10 +165,21 @@ class CompanyController {
             const trip = await getTrip(id)
             const filepath = path.join(__dirname, '../', 'trip_photo_storage', trip.trip_image)
             console.log(filepath)
-            res.sendFile(filepath)
+            res.status(200).sendFile(filepath)
         } catch (e) {
          console.log(e)
          return res.status(400).json({message: "Sending image error"})
+        }
+    }
+
+    async sendUserTrips(req, res){
+        try{
+            const {country} = req.body
+            const trips = await getAllUserTrips(country)
+            console.log(trips)
+            res.send()
+        }catch (e) {
+            console.log(e)
         }
     }
 }
