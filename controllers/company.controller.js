@@ -3,9 +3,6 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
 const path = require("path");
-const {all} = require("express/lib/application");
-const {config} = require("dotenv");
-const fs = require("fs");
 
 const validateCompany = async (login, mail) => {
     const companyCount = await database.query(`SELECT COUNT(company_id) FROM companyinfo WHERE
@@ -26,20 +23,6 @@ or company_mail = '${login}'`);
     return bcrypt.compareSync(password, company.rows[0].company_password)
 }
 
-const getCompany = async (login) => {
-    const company = await database.query(`SELECT * FROM companyinfo WHERE company_name = '${login}' 
-or company_mail = '${login}'`)
-    return company.rows[0];
-}
-
-const addTrip = async (name, amount, animal, transfer, food, hotel, startCountry, endCountry, startDate, endDate, image,
-                       price, companyId, description) => {
-    await database.query(`INSERT INTO trip (trip_name, trip_people_amount, trip_pets, trip_transfer, trip_food, trip_hotel, trip_start_country, 
-trip_destination_country, trip_start_date, trip_end_date, trip_image, trip_price, company_id, trip_description)
-VALUES ('${name}', '${amount}', '${animal}', '${transfer}', '${food}', '${hotel}','${startCountry}', 
-'${endCountry}', '${startDate}','${endDate}','${image}','${price}', '${companyId}', '${description}')`)
-}
-
 const generateAccessToken = async (id, login) => {
     const payload = {
         id,
@@ -48,10 +31,24 @@ const generateAccessToken = async (id, login) => {
     return jwt.sign(payload, secret, {expiresIn: '24h'})
 }
 
+const getCompany = async (login) => {
+    const company = await database.query(`SELECT * FROM companyinfo WHERE company_name = '${login}' 
+or company_mail = '${login}'`)
+    return company.rows[0];
+}
+
 const checkTrip = async (name) => {
     const tripCount = await database.query(`SELECT COUNT (trip_id) FROM trip WHERE 
 trip_name = '${name}'`)
     return +tripCount.rows[0].count > 0
+}
+
+const addTrip = async (name, amount, animal, transfer, food, hotel, startCountry, endCountry, startDate, endDate, image,
+                       price, companyId, description) => {
+    await database.query(`INSERT INTO trip (trip_name, trip_people_amount, trip_pets, trip_transfer, trip_food, trip_hotel, trip_start_country, 
+trip_destination_country, trip_start_date, trip_end_date, trip_image, trip_price, company_id, trip_description)
+VALUES ('${name}', '${amount}', '${animal}', '${transfer}', '${food}', '${hotel}','${startCountry}', 
+'${endCountry}', '${startDate}','${endDate}','${image}','${price}', '${companyId}', '${description}')`)
 }
 
 const checkForDate = async (name, startDate, endDate) => {
@@ -176,8 +173,7 @@ class CompanyController {
         try{
             const {country} = req.body
             const trips = await getAllUserTrips(country)
-            console.log(trips)
-            res.send()
+            res.send(trips)
         }catch (e) {
             console.log(e)
         }

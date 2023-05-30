@@ -37,6 +37,11 @@ const generateAccessToken = (id, login) => {
     return jwt.sign(payload, secret, {expiresIn: '24h'})
 }
 
+const addUserChoice = async (userId, tripId) => {
+    return await database.query(`INSERT INTO user_choice(user_id, trip_id) 
+VALUES (${userId}, ${tripId})`)
+}
+
 class UserController {
     async registerUser(req, res) {
         try {
@@ -79,6 +84,14 @@ class UserController {
         } catch (e) {
             console.log(e)
             return res.status(400).json({message: "File sending error"})
+        }
+    }
+
+    async addChoice(req, res) {
+        try{
+            await addUserChoice(req.user.id, req.body.tripId)
+        } catch (e) {
+            console.log(e)
         }
     }
 }

@@ -18,5 +18,6 @@ const upload = multer({ storage: fileStorageEngine });
 userRouter.post('/sign-up',upload.single("image"), userController.registerUser);
 userRouter.post('/log-in', userController.logInUser);
 userRouter.get('/logged-user-page-avatar', auth, userController.sendUserImage)
+userRouter.post('/user-choose-trip', auth, userController.addChoice)
 
 module.exports = userRouter
