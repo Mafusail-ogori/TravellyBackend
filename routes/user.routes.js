@@ -19,6 +19,7 @@ userRouter.post('/sign-up',upload.single("image"), userController.registerUser);
 userRouter.post('/log-in', userController.logInUser);
 userRouter.get('/logged-user-page-avatar', auth, userController.sendUserImage)
 userRouter.post('/user-choose-trip', auth, userController.addChoice)
+userRouter.post('/delete-cart', auth, userController.deleteFromCart)
 userRouter.get('/user-cart-trips', auth, userController.getUserCart)
 
 module.exports = userRouter

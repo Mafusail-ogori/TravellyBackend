@@ -158,10 +158,8 @@ class CompanyController {
     async sendTripImage(req, res){
         try {
             const {id} =  req.body
-            console.log(req.body)
             const trip = await getTrip(id)
             const filepath = path.join(__dirname, '../', 'trip_photo_storage', trip.trip_image)
-            console.log(filepath)
             res.status(200).sendFile(filepath)
         } catch (e) {
          console.log(e)

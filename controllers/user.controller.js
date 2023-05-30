@@ -37,9 +37,10 @@ const generateAccessToken = (id, login) => {
     return jwt.sign(payload, secret, {expiresIn: '24h'})
 }
 
-const addUserChoice = async (userId, tripId) => {
-    return await database.query(`INSERT INTO user_choice(user_id, trip_id) 
-VALUES (${userId}, ${tripId})`)
+const addUserChoice = async (userId, tripId, amount) => {
+    if( await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount - ${amount} WHERE trip_id = ${tripId} and trip_people_amount > ${amount}`)) {
+        return await database.query(`INSERT INTO user_choice(user_id, trip_id, amount) VALUES (${userId}, ${tripId}, ${amount})`)
+    }
 }
 
 const userCartTrips = async (userId) => {
@@ -47,6 +48,10 @@ const userCartTrips = async (userId) => {
 INNER JOIN user_choice ON user_choice.trip_id = trip.trip_id
 WHERE user_choice.user_id = ${userId}`)
     return trips.rows
+}
+
+const deleteCartTrip = async(userId, tripId) => {
+    await database.query(`DELETE FROM user_choice WHERE user_choice.user_id = ${userId} and user_choice.trip_id = ${tripId}`)
 }
 
 class UserController {
@@ -96,7 +101,8 @@ class UserController {
 
     async addChoice(req, res) {
         try {
-            await addUserChoice(req.user.id, req.body.tripId)
+            console.log(req.body, req.user.id)
+            await addUserChoice(req.user.id, req.body.tripId, req.body.amount)
             res.status(200).json({message: 'added successfully'})
         } catch (e) {
             console.log(e)
@@ -108,6 +114,15 @@ class UserController {
         try {
             res.status(200).send(await userCartTrips(req.user.id))
         } catch (e) {
+            console.log(e)
+            res.status(400).json({message: "Sending user cart trips error"})
+        }
+    }
+
+    async deleteFromCart(req,res){
+        try{
+            res.status(200).send(await deleteCartTrip(req.user.id, req.body.tripId))
+        }catch (e) {
             console.log(e)
             res.status(400).json({message: "Sending user cart trips error"})
         }
