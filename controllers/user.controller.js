@@ -42,6 +42,13 @@ const addUserChoice = async (userId, tripId) => {
 VALUES (${userId}, ${tripId})`)
 }
 
+const userCartTrips = async (userId) => {
+    const trips = await database.query(`SELECT * FROM trip
+INNER JOIN user_choice ON user_choice.trip_id = trip.trip_id
+WHERE user_choice.user_id = ${userId}`)
+    return trips.rows
+}
+
 class UserController {
     async registerUser(req, res) {
         try {
@@ -88,10 +95,21 @@ class UserController {
     }
 
     async addChoice(req, res) {
-        try{
+        try {
             await addUserChoice(req.user.id, req.body.tripId)
+            res.status(200).json({message: 'added successfully'})
         } catch (e) {
             console.log(e)
+            res.status(400)
+        }
+    }
+
+    async getUserCart(req,res){
+        try {
+            res.status(200).send(await userCartTrips(req.user.id))
+        } catch (e) {
+            console.log(e)
+            res.status(400).json({message: "Sending user cart trips error"})
         }
     }
 }
