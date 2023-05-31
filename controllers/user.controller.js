@@ -38,7 +38,7 @@ const generateAccessToken = (id, login) => {
 }
 
 const addUserChoice = async (userId, tripId, amount) => {
-    if( await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount - ${amount} WHERE trip_id = ${tripId} and trip_people_amount > ${amount}`)) {
+    if (await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount - ${amount} WHERE trip_id = ${tripId} and trip_people_amount > ${amount}`)) {
         return await database.query(`INSERT INTO user_choice(user_id, trip_id, amount) VALUES (${userId}, ${tripId}, ${amount})`)
     }
 }
@@ -50,8 +50,9 @@ WHERE user_choice.user_id = ${userId}`)
     return trips.rows
 }
 
-const deleteCartTrip = async(userId, tripId) => {
-    await database.query(`DELETE FROM user_choice WHERE user_choice.user_id = ${userId} and user_choice.trip_id = ${tripId}`)
+const deleteCartTrip = async (userId, tripId, amount) => {
+    await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount + ${amount} WHERE trip_id = ${tripId}`)
+    return await database.query(`DELETE FROM user_choice WHERE user_choice.user_id = ${userId} and user_choice.trip_id = ${tripId}`)
 }
 
 class UserController {
@@ -110,7 +111,7 @@ class UserController {
         }
     }
 
-    async getUserCart(req,res){
+    async getUserCart(req, res) {
         try {
             res.status(200).send(await userCartTrips(req.user.id))
         } catch (e) {
@@ -119,10 +120,11 @@ class UserController {
         }
     }
 
-    async deleteFromCart(req,res){
-        try{
-            res.status(200).send(await deleteCartTrip(req.user.id, req.body.tripId))
-        }catch (e) {
+    async deleteFromCart(req, res) {
+        try {
+            console.log(req.body)
+            res.status(200).send(await deleteCartTrip(req.user.id, req.body.tripId, req.body.amount))
+        } catch (e) {
             console.log(e)
             res.status(400).json({message: "Sending user cart trips error"})
         }

@@ -74,6 +74,10 @@ const getAllUserTrips = async (country) => {
     return trips.rows
 }
 
+const deleteSelectedTrip = async(companyId, tripId) => {
+    return database.query(`DELETE FROM trip WHERE company_id = ${companyId} and trip_id = ${tripId}`)
+}
+
 class CompanyController {
     async registerCompany(req, res) {
         try {
@@ -174,6 +178,16 @@ class CompanyController {
             res.send(trips)
         }catch (e) {
             console.log(e)
+            res.status(400).json({message: 'no trips'})
+        }
+    }
+
+    async deleteTrip(req, res){
+        try{
+            await deleteSelectedTrip(req.user.id, req.body.tripId)
+            res.send(200).json({message: 'success'})
+        }catch (e) {
+
         }
     }
 }
