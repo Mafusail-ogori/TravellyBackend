@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {secret} = require('../config')
 const path = require("path");
+const nodemailer = require('nodemailer')
 
 const validateCompany = async (login, mail) => {
     const companyCount = await database.query(`SELECT COUNT(company_id) FROM companyinfo WHERE
@@ -53,10 +54,36 @@ VALUES ('${name}', '${amount}', '${animal}', '${transfer}', '${food}', '${hotel}
 
 const editTripData = async (name, amount, animal, transfer, food, hotel, startCountry, endCountry, startDate, endDate,
                             price, description, tripId) => {
-    await database.query(`UPDATE trip SET trip_name = '${name}' trip_people_amount = ${amount}, trip_pets = ${animal}, 
+    await database.query(`UPDATE trip SET trip_name = '${name}', trip_people_amount = '${amount}' , trip_pets = '${animal}', 
 trip_transfer = '${transfer}', trip_food = '${food}', trip_hotel = '${hotel}', trip_start_country = '${startCountry}',
-trip_destination_country = '${endCountry}',trip_start_date = '${startDate}', trip_end_date = '${endDate}' trip_price = ${price},
-trip_description = '${description}' WHERE trip_id = ${tripId}`)
+trip_destination_country = '${endCountry}',trip_start_date = '${startDate}', trip_end_date = '${endDate}', trip_price = '${price}',
+trip_description = '${description}' WHERE trip_id = '${tripId}'`)
+    const userMail = await database.query(`select user_mail from trip join 
+user_choice on ${tripId} = trip.trip_id join userinfo on user_choice.user_id = userinfo.user_id`)
+    if(userMail.rows[0].user_mail.includes('@')){
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: 'dpo.prots@gmail.com',
+                pass: 'hajaomija'
+            }
+        })
+        const mailOptions = {
+            from: 'dpo.prots@gmail.com',
+            to: userMail.rows[0].user_mail,
+            subject: 'Зміни в путівці',
+            text: 'В путівці, що ви обрали відбулись зміни, будь ласка перегляньте їх на сайті, з повагою команда Travelly!'
+        }
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error){
+                console.log(error)
+            }
+            else{
+                console.log('ПОВІДОМЛЕННЯ НАДІСЛАНЕ: ', info.response)
+            }
+        })
+    }
 }
 
 const checkForDate = async (name, startDate, endDate) => {
