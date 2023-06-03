@@ -28,11 +28,12 @@ const uploadPhoto = multer({storage: tripPhotoStorageEngine})
 
 companyRouter.post('/sign-up',upload.single("image"), companyController.registerCompany);
 companyRouter.post('/log-in', companyController.logInCompany)
-companyRouter.post('/add-trip', uploadPhoto.single("image"), companyController.addTrip)
+companyRouter.post('/add-trip',auth, uploadPhoto.single("image"), companyController.addTrip)
 companyRouter.get('/logged-company-page-avatar', auth, companyController.sendCompanyImage)
 companyRouter.get('/review-trip', auth, companyController.getAllCompanyTrips)
 companyRouter.post('/trip-image', companyController.sendTripImage)
 companyRouter.post('/get-user-trips', companyController.sendUserTrips)
 companyRouter.post('/delete-trip',auth, companyController.deleteTrip)
+companyRouter.post('/edit-trip', companyController.editTripData)
 
 module.exports = companyRouter

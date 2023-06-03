@@ -51,6 +51,14 @@ VALUES ('${name}', '${amount}', '${animal}', '${transfer}', '${food}', '${hotel}
 '${endCountry}', '${startDate}','${endDate}','${image}','${price}', '${companyId}', '${description}')`)
 }
 
+const editTripData = async (name, amount, animal, transfer, food, hotel, startCountry, endCountry, startDate, endDate,
+                            price, description, tripId) => {
+    await database.query(`UPDATE trip SET trip_name = '${name}' trip_people_amount = ${amount}, trip_pets = ${animal}, 
+trip_transfer = '${transfer}', trip_food = '${food}', trip_hotel = '${hotel}', trip_start_country = '${startCountry}',
+trip_destination_country = '${endCountry}',trip_start_date = '${startDate}', trip_end_date = '${endDate}' trip_price = ${price},
+trip_description = '${description}' WHERE trip_id = ${tripId}`)
+}
+
 const checkForDate = async (name, startDate, endDate) => {
     const trip = await database.query(`SELECT * FROM trip WHERE trip_name = '${name}'`)
     console.log(startDate, endDate, trip.rows[0].trip_start_date, trip.rows[0].trip_end_date)
@@ -60,7 +68,7 @@ const checkForDate = async (name, startDate, endDate) => {
 }
 
 const getAllTrips = async (companyId) => {
-   const trips = await database.query(`SELECT * FROM trip WHERE company_id = ${companyId}`)
+    const trips = await database.query(`SELECT * FROM trip WHERE company_id = ${companyId}`)
     return trips.rows
 }
 
@@ -74,9 +82,10 @@ const getAllUserTrips = async (country) => {
     return trips.rows
 }
 
-const deleteSelectedTrip = async(companyId, tripId) => {
+const deleteSelectedTrip = async (companyId, tripId) => {
     return database.query(`DELETE FROM trip WHERE company_id = ${companyId} and trip_id = ${tripId}`)
 }
+
 
 class CompanyController {
     async registerCompany(req, res) {
@@ -129,20 +138,12 @@ class CompanyController {
         try {
             const data = req.file.filename
             const allData = req.body
-            jwt.verify(allData.token, 'PIZZA_PEPPERONI', async (err, decoded) => {
-                if (err) {
-                    console.log(err)
-                } else {
-                    console.log(decoded)
-                    if (await checkTrip(allData.name) && await checkForDate(allData.name, allData.startDate.slice(0, 10), allData.endDate.slice(0, 10))) {
-                        return res.status(400).json({message: "There is such an trip for this dates"})
-                    }
-                    await addTrip(allData.name, allData.amount, allData.animal,
-                        allData.transfer, allData.food, allData.hotel,
-                        allData.startCountry, allData.endCountry, allData.startDate.slice(0, 10), allData.endDate.slice(0, 10), data, allData.price, decoded.id, allData.description)
-                }
-            })
-
+            if (await checkTrip(allData.name) && await checkForDate(allData.name, allData.startDate.slice(0, 10), allData.endDate.slice(0, 10))) {
+                return res.status(400).json({message: "There is such an trip for this dates"})
+            }
+            await addTrip(allData.name, allData.amount, allData.animal,
+                allData.transfer, allData.food, allData.hotel,
+                allData.startCountry, allData.endCountry, allData.startDate.slice(0, 10), allData.endDate.slice(0, 10), data, allData.price, req.user.id, allData.description)
             return res.status(200).json({message: "Trip added successfully"})
         } catch (e) {
             console.log(e)
@@ -151,43 +152,55 @@ class CompanyController {
     }
 
     async getAllCompanyTrips(req, res) {
-        try{
+        try {
             res.send(await getAllTrips(req.user.id))
-        }catch (e) {
+        } catch (e) {
             console.log(e)
             res.status(400).json({message: "Data sending error"})
         }
     }
 
-    async sendTripImage(req, res){
+    async sendTripImage(req, res) {
         try {
-            const {id} =  req.body
+            const {id} = req.body
             const trip = await getTrip(id)
             const filepath = path.join(__dirname, '../', 'trip_photo_storage', trip.trip_image)
             res.status(200).sendFile(filepath)
         } catch (e) {
-         console.log(e)
-         return res.status(400).json({message: "Sending image error"})
+            console.log(e)
+            return res.status(400).json({message: "Sending image error"})
         }
     }
 
-    async sendUserTrips(req, res){
-        try{
+    async sendUserTrips(req, res) {
+        try {
             const {country} = req.body
             const trips = await getAllUserTrips(country)
             res.send(trips)
-        }catch (e) {
+        } catch (e) {
             console.log(e)
             res.status(400).json({message: 'no trips'})
         }
     }
 
-    async deleteTrip(req, res){
-        try{
+    async deleteTrip(req, res) {
+        try {
             await deleteSelectedTrip(req.user.id, req.body.tripId)
             res.send(200).json({message: 'success'})
-        }catch (e) {
+        } catch (e) {
 
+        }
+    }
+
+    async editTripData(req, res) {
+        try {
+            const allData = req.body;
+            await editTripData(allData.name, allData.amount, allData.animal,
+                allData.transfer, allData.food, allData.hotel,
+                allData.startCountry, allData.endCountry, allData.startDate, allData.endDate, allData.price, allData.description, allData.tripId)
+            res.status(200).json({message: 'edited successfully'})
+        } catch (e) {
+            console.log(e)
         }
     }
 }
