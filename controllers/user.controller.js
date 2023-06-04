@@ -38,7 +38,8 @@ const generateAccessToken = (id, login) => {
 }
 
 const addUserChoice = async (userId, tripId, amount) => {
-    if (await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount - ${amount} WHERE trip_id = ${tripId} and trip_people_amount > ${amount}`)) {
+    if (await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount - ${amount} 
+WHERE trip_id = ${tripId} and trip_people_amount > ${amount}`)) {
         return await database.query(`INSERT INTO user_choice(user_id, trip_id, amount) VALUES (${userId}, ${tripId}, ${amount})`)
     }
 }
@@ -46,7 +47,14 @@ const addUserChoice = async (userId, tripId, amount) => {
 const userCartTrips = async (userId) => {
     const trips = await database.query(`SELECT * FROM trip
 INNER JOIN user_choice ON user_choice.trip_id = trip.trip_id
-WHERE user_choice.user_id = ${userId}`)
+WHERE user_choice.user_id = ${userId} and user_choice.choice_status = 'false'`)
+    return trips.rows
+}
+
+const userBoughtTrips = async(userId)=> {
+    const trips = await database.query(`SELECT * FROM trip
+INNER JOIN user_choice ON user_choice.trip_id = trip.trip_id
+WHERE user_choice.user_id = ${userId} and user_choice.choice_status = 'true'`)
     return trips.rows
 }
 
@@ -60,6 +68,7 @@ const addPaymentOperation = async (cardNumber, operationAmount, userId, tripId) 
     await database.query(`INSERT INTO operations (card_number, amount, user_id, company_id, operation_date) values
 ('${cardNumber}', '${operationAmount}', '${userId}', '${companyId.rows[0].company_id}', '${new Date().toLocaleString().slice(0,10)}')`)
     await database.query(`UPDATE user_choice SET choice_status = 'true' WHERE trip_id = '${tripId}' and user_id = '${userId}'`)
+    await database.query(`UPDATE companyinfo SET profit = profit + ${operationAmount} WHERE company_id = ${companyId.rows[0].company_id}`)
 }
 
 class UserController {
@@ -124,6 +133,15 @@ class UserController {
         } catch (e) {
             console.log(e)
             return res.status(400).json({message: "Sending user cart trips error"})
+        }
+    }
+
+    async getUserBought(req, res){
+        try{
+            return res.status(200).send(await userBoughtTrips(req.user.id))
+        }catch (e) {
+            console.log(e)
+            return res.status(400).json({message: 'Success'})
         }
     }
 
