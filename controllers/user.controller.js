@@ -55,6 +55,13 @@ const deleteCartTrip = async (userId, tripId, amount) => {
     return await database.query(`DELETE FROM user_choice WHERE user_choice.user_id = ${userId} and user_choice.trip_id = ${tripId}`)
 }
 
+const addPaymentOperation = async (cardNumber, operationAmount, userId, tripId) => {
+    const companyId = await database.query(`SELECT company_id FROM trip WHERE trip_id = '${tripId}'`)
+    await database.query(`INSERT INTO operations (card_number, amount, user_id, company_id, operation_date) values
+('${cardNumber}', '${operationAmount}', '${userId}', '${companyId.rows[0].company_id}', '${new Date().toLocaleString().slice(0,10)}')`)
+    await database.query(`UPDATE user_choice SET choice_status = 'true' WHERE trip_id = '${tripId}' and user_id = '${userId}'`)
+}
+
 class UserController {
     async registerUser(req, res) {
         try {
@@ -113,20 +120,29 @@ class UserController {
 
     async getUserCart(req, res) {
         try {
-            res.status(200).send(await userCartTrips(req.user.id))
+            return res.status(200).send(await userCartTrips(req.user.id))
         } catch (e) {
             console.log(e)
-            res.status(400).json({message: "Sending user cart trips error"})
+            return res.status(400).json({message: "Sending user cart trips error"})
         }
     }
 
     async deleteFromCart(req, res) {
         try {
             console.log(req.body)
-            res.status(200).send(await deleteCartTrip(req.user.id, req.body.tripId, req.body.amount))
+            return res.status(200).send(await deleteCartTrip(req.user.id, req.body.tripId, req.body.amount))
         } catch (e) {
             console.log(e)
-            res.status(400).json({message: "Sending user cart trips error"})
+            return res.status(400).json({message: "Sending user cart trips error"})
+        }
+    }
+
+    async addPayment(req, res){
+        try {
+            await addPaymentOperation(req.body.cardNumber, req.body.amount, req.user.id, req.body.tripId)
+            return res.status(200).json({message: 'Bought successfully'})
+        }catch (e) {
+            console.log(e)
         }
     }
 }

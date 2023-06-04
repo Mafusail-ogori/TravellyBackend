@@ -21,5 +21,6 @@ userRouter.get('/logged-user-page-avatar', auth, userController.sendUserImage)
 userRouter.post('/user-choose-trip', auth, userController.addChoice)
 userRouter.post('/delete-cart', auth, userController.deleteFromCart)
 userRouter.get('/user-cart-trips', auth, userController.getUserCart)
+userRouter.post('/payment', auth, userController.addPayment)
 
 module.exports = userRouter

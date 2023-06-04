@@ -11,5 +11,4 @@ app.use(express.json())
 app.use('/user', userRouter)
 app.use('/company', companyRouter)
 
-
 app.listen(port, () => console.log(`server started on port ${port}`))
