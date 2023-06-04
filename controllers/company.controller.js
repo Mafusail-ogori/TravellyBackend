@@ -113,6 +113,12 @@ const deleteSelectedTrip = async (companyId, tripId) => {
     return database.query(`DELETE FROM trip WHERE company_id = ${companyId} and trip_id = ${tripId}`)
 }
 
+const getCompanyProfit = async(companyId) => {
+    console.log(companyId)
+    const incomeData = await database.query(`SELECT operation_date, amount FROM operations WHERE company_id = ${companyId}`)
+    return incomeData.rows
+}
+
 
 class CompanyController {
     async registerCompany(req, res) {
@@ -228,6 +234,15 @@ class CompanyController {
             res.status(200).json({message: 'edited successfully'})
         } catch (e) {
             console.log(e)
+        }
+    }
+
+    async getProfit(req, res){
+        try{
+            return res.status(200).send(await getCompanyProfit(req.user.id))
+        }catch (e) {
+            console.log(e)
+            res.status(400).json({message: 'Sending error'})
         }
     }
 }

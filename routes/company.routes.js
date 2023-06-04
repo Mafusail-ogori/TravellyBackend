@@ -35,5 +35,6 @@ companyRouter.post('/trip-image', companyController.sendTripImage)
 companyRouter.post('/get-user-trips', companyController.sendUserTrips)
 companyRouter.post('/delete-trip',auth, companyController.deleteTrip)
 companyRouter.post('/edit-trip', companyController.editTripData)
+companyRouter.get('/get-profit', auth, companyController.getProfit)
 
 module.exports = companyRouter
