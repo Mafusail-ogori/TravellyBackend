@@ -62,14 +62,14 @@ trip_description = '${description}' WHERE trip_id = '${tripId}'`)
 user_choice on ${tripId} = trip.trip_id join userinfo on user_choice.user_id = userinfo.user_id`)
     if(userMail.rows[0].user_mail.includes('@')){
         const transporter = nodemailer.createTransport({
-            service: 'Gmail',
+            service: 'Outlook',
             auth: {
-                user: 'dpo.prots@gmail.com',
-                pass: 'hajaomija'
+                user: 'mafusaillo@outlook.com',
+                pass: 'Ukraine123'
             }
         })
         const mailOptions = {
-            from: 'dpo.prots@gmail.com',
+            from: 'mafusaillo@outlook.com',
             to: userMail.rows[0].user_mail,
             subject: 'Зміни в путівці',
             text: 'В путівці, що ви обрали відбулись зміни, будь ласка перегляньте їх на сайті, з повагою команда Travelly!'

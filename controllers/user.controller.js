@@ -51,7 +51,7 @@ WHERE user_choice.user_id = ${userId} and user_choice.choice_status = 'false'`)
     return trips.rows
 }
 
-const userBoughtTrips = async(userId)=> {
+const userBoughtTrips = async (userId) => {
     const trips = await database.query(`SELECT * FROM trip
 INNER JOIN user_choice ON user_choice.trip_id = trip.trip_id
 WHERE user_choice.user_id = ${userId} and user_choice.choice_status = 'true'`)
@@ -59,6 +59,7 @@ WHERE user_choice.user_id = ${userId} and user_choice.choice_status = 'true'`)
 }
 
 const deleteCartTrip = async (userId, tripId, amount) => {
+
     await database.query(`UPDATE trip SET trip_people_amount = trip_people_amount + ${amount} WHERE trip_id = ${tripId}`)
     return await database.query(`DELETE FROM user_choice WHERE user_choice.user_id = ${userId} and user_choice.trip_id = ${tripId}`)
 }
@@ -69,6 +70,11 @@ const addPaymentOperation = async (cardNumber, operationAmount, userId, tripId) 
 ('${cardNumber}', '${operationAmount}', '${userId}', '${companyId.rows[0].company_id}', '${new Date().toLocaleString().slice(0,10)}')`)
     await database.query(`UPDATE user_choice SET choice_status = 'true' WHERE trip_id = '${tripId}' and user_id = '${userId}'`)
     await database.query(`UPDATE companyinfo SET profit = profit + ${operationAmount} WHERE company_id = ${companyId.rows[0].company_id}`)
+}
+
+const addUserReview = async (userId, tripId, review) => {
+    console.log(userId, tripId, review)
+    return await database.query(`UPDATE user_choice SET review = '${review}' WHERE trip_id = '${tripId}' and user_id = '${userId}'`)
 }
 
 class UserController {
@@ -136,10 +142,10 @@ class UserController {
         }
     }
 
-    async getUserBought(req, res){
-        try{
+    async getUserBought(req, res) {
+        try {
             return res.status(200).send(await userBoughtTrips(req.user.id))
-        }catch (e) {
+        } catch (e) {
             console.log(e)
             return res.status(400).json({message: 'Success'})
         }
@@ -155,12 +161,23 @@ class UserController {
         }
     }
 
-    async addPayment(req, res){
+    async addPayment(req, res) {
         try {
             await addPaymentOperation(req.body.cardNumber, req.body.amount, req.user.id, req.body.tripId)
             return res.status(200).json({message: 'Bought successfully'})
-        }catch (e) {
+        } catch (e) {
             console.log(e)
+            return res.status(400).json({message: "Adding payment failure"})
+        }
+    }
+
+    async addReview(req, res) {
+        try {
+            await addUserReview(req.user.id, req.body.tripId, req.body.review)
+            return res.status(200).json({message: "Success"})
+        } catch (e) {
+            console.log(e)
+            return res.status(400).json({message: "Adding review failure"})
         }
     }
 }

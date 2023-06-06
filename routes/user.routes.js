@@ -23,5 +23,6 @@ userRouter.post('/delete-cart', auth, userController.deleteFromCart)
 userRouter.get('/user-cart-trips', auth, userController.getUserCart)
 userRouter.post('/payment', auth, userController.addPayment)
 userRouter.get('/user-bought-trips', auth, userController.getUserBought)
+userRouter.post('/add-review', auth, userController.addReview)
 
 module.exports = userRouter
