@@ -64,12 +64,12 @@ user_choice on ${tripId} = trip.trip_id join userinfo on user_choice.user_id = u
         const transporter = nodemailer.createTransport({
             service: 'Outlook',
             auth: {
-                user: 'mafusaillo@outlook.com',
-                pass: 'Ukraine123'
+                user: '******',
+                pass: '*******'
             }
         })
         const mailOptions = {
-            from: 'mafusaillo@outlook.com',
+            from: '******',
             to: userMail.rows[0].user_mail,
             subject: 'Зміни в путівці',
             text: 'В путівці, що ви обрали відбулись зміни, будь ласка перегляньте їх на сайті, з повагою команда Travelly!'
